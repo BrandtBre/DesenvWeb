@@ -44,7 +44,10 @@ router.post(process.env.BASE_URL + '/api/v1/rest/reply',
         const data = req.body;
         try {
             console.log(data);
-            result = await reply.create(data);
+            result = await reply.create({
+                id_post: data.post,
+                reply: data.reply,
+            });
             return resp.status(201).send({success: true, msg: 'Resposta criada com sucesso!'});
         } catch (err) {
             return resp.status(500).send({error: err});

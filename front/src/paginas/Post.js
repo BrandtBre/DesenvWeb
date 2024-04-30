@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import {useParams} from 'react-router-dom';
 
+
 const Post = () => {
     const {postId} = useParams();
-    const [post, setListaPosts] = React.useState([]);
-    const [replies, setListaReplies] = React.useState([]);
+    const [post, setListaPosts] = useState([]);
+    const [replies, setListaReplies] = useState([]);
+    const [reply, setReply] = useState('');
     React.useEffect(()=>{
         const res = axios.get("blog/api/v1/rest/post/"+postId);
         res.then((query) => {
@@ -18,7 +20,30 @@ const Post = () => {
             console.log(query.data);
         })
     }, []);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
+        try {
+            const response = await axios.post('blog/api/v1/rest/reply/', {
+                post: postId,
+                reply,
+            });
+
+            setReply('');
+            console.log(response.data);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    const handleDelete = async (e) => {
+        try {
+            const response = await axios.get(`blog/api/v1/rest/reply/${e}`);
+
+            console.log(response.data);
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     return (
         <div>
@@ -39,18 +64,31 @@ const Post = () => {
                         </thead>
                         <tbody>
                             {replies &&
-                                replies.map((reply, index) => {
+                                replies.map((reply, index) => (
                                     <tr key={index}>
                                         <th key={reply.id}>{reply.id}</th>
                                         <th key={reply.reply}>{reply.reply}</th>
                                         <th key={reply.createdAt}>{reply.createdAt}</th>
+                                        <th><button onClick={() => handleDelete(reply.id)}>Excluir</button></th>
                                     </tr>
-                                })
-
-                            }
+                                ))}
                         </tbody>
                     </table>
                     )}
+                </div>
+                <div>
+                    <form onSubmit={handleSubmit}>
+                        <div>
+                            <label htmlFor="reply">Coment</label>
+                            <input type='text' id='reply'
+                                value={reply}
+                                onChange={(e)=>setReply(e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <button type='submit'>Criar Post</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         )}
